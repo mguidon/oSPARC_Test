@@ -1,0 +1,65 @@
+version: '3'
+services:
+  postgres:
+    restart: always
+    image: postgres:10
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - /var/lib/postgresql/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres
+  client:
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+    ports:
+      - 8010:8010
+    volumes:
+      - ./client:/work
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+  producer:
+    build:
+      context: .
+      dockerfile: ./producer/Dockerfile
+    ports:
+      - 8011:8011
+    volumes:
+      - ./producer:/work
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PUBSUB_CHANNEL=${PUBSUB_CHANNEL}
+  consumer:
+    build:
+      context: .
+      dockerfile: ./consumer/Dockerfile
+    ports:
+      - 8012:8012
+    volumes:
+      - ./consumer:/work
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PUBSUB_CHANNEL=${PUBSUB_CHANNEL}
+      

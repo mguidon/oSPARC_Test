@@ -1,6 +1,8 @@
-from flask import Flask
 import os
 import pgpubsub
+import random
+import time
+import string
 
 def get_env_variable(name):
     try:
@@ -9,31 +11,18 @@ def get_env_variable(name):
         message = "Expected environment variable '{}' not set.".format(name)
         raise Exception(message)
 
-# get env vars OR ELSE
+# get env vars
 POSTGRES_URL = "postgres:5432"
 POSTGRES_USER = get_env_variable("POSTGRES_USER")
 POSTGRES_PW = get_env_variable("POSTGRES_PASSWORD")
 POSTGRES_DB = get_env_variable("POSTGRES_DB")
 PUBSUB_CHANNEL = get_env_variable("PUBSUB_CHANNEL")
 
-
-app = Flask(__name__)
-
 DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}/{db}'.format(user=POSTGRES_USER,pw=POSTGRES_PW,url=POSTGRES_URL,db=POSTGRES_DB)
 
 pubsub = pgpubsub.connect(user=POSTGRES_USER, password=POSTGRES_PW, host="postgres", dbname=POSTGRES_DB)
 
-pubsub.listen(PUBSUB_CHANNEL)
-@app.route('/')
-def consume():
-    msg = ""
-    e = pubsub.get_event()
-    if not e is None:
-        sender_pid = e.pid
-        what = e.payload
-        channel = e.channel
-        msg = msg + "{} sent {} on {}".format(sender_pid, what, channel)
-    return "Received message: {}".format(msg)
-
-if __name__ == '__main__':
-    app.run(port=8012, debug=True, host='0.0.0.0', threaded=True)
+while True:
+    msg = ''.join(random.choices(string.ascii_uppercase + string.digits, k=64))
+    pubsub.notify(PUBSUB_CHANNEL, msg)
+    time.sleep(1)

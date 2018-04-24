@@ -1,18 +1,30 @@
-from app import db
-from sqlalchemy.dialects.postgresql import JSON
+import networkx as nx
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
 
-class Result(db.Model):
-    __tablename__ = 'results'
+from sqlalchemy_json import MutableJson
 
-    id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String())
-    result_all = db.Column(JSON)
-    result_no_stop_words = db.Column(JSON)
 
-    def __init__(self, url, result_all, result_no_stop_words):
-        self.url = url
-        self.result_all = result_all
-        self.result_no_stop_words = result_no_stop_words
+Base = declarative_base()
+
+class ComputationalWorkflow(Base):
+    __tablename__ = 'comp.workflow'
+
+    id = Column(Integer, primary_key=True)
+    dag_adjancency_list = Column(MutableJson)
+
+    @property
+    def execution_graph(self):
+        d = self.dag_adjacency_list
+        G = nx.DiGraph()
+
+        for node in d.keys():
+            nodes = d[node]
+            if len(nodes) == 0:
+                G.add_node(int(node))
+                continue
+            G.add_edges_from([(int(node), n) for n in nodes])
+        return G
 
     def __repr__(self):
         return '<id {}>'.format(self.id)

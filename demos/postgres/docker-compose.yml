@@ -47,6 +47,19 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
       - PUBSUB_CHANNEL=${PUBSUB_CHANNEL}
+  cli_producer:
+    build:
+      context: .
+      dockerfile: ./cli_producer/Dockerfile
+    volumes:
+      - ./cli_producer:/work
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PUBSUB_CHANNEL=${PUBSUB_CHANNEL}
   consumer:
     build:
       context: .
@@ -62,4 +75,17 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
       - PUBSUB_CHANNEL=${PUBSUB_CHANNEL}
-      
+  cli_consumer:
+    build:
+      context: .
+      dockerfile: ./cli_consumer/Dockerfile
+    volumes:
+      - ./cli_consumer:/work
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PUBSUB_CHANNEL=${PUBSUB_CHANNEL}
+            

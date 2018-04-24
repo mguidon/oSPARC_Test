@@ -23,9 +23,11 @@ DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}/{db}'.format(user=POSTGRES_USE
 
 pubsub = pgpubsub.connect(user=POSTGRES_USER, password=POSTGRES_PW, host="postgres", dbname=POSTGRES_DB)
 
+
+
 pubsub.listen(PUBSUB_CHANNEL)
-@app.route('/')
-def consume():
+
+while True:
     msg = ""
     e = pubsub.get_event()
     if not e is None:
@@ -33,7 +35,4 @@ def consume():
         what = e.payload
         channel = e.channel
         msg = msg + "{} sent {} on {}".format(sender_pid, what, channel)
-    return "Received message: {}".format(msg)
-
-if __name__ == '__main__':
-    app.run(port=8012, debug=True, host='0.0.0.0', threaded=True)
+        print("Received message: {}".format(msg))
